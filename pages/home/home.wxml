@@ -1,12 +1,66 @@
 <!--pages/home/home.wxml-->
 <wxs module="icons">
   var icons = ['reverse', 'camera', 'album'];
+  var dataInfo = {
+    emotion: {
+      angry: '愤怒',
+      disgust: '厌恶, '
+      fear: '恐惧',
+      happy: '高兴',
+      sad: '伤心',
+      surprise: '惊讶',
+      neutral: '无表情',
+      pouty: '撅嘴',
+      grimace: '鬼脸'
+    },
+    expression: {
+      none: '不笑',
+      smile: '微笑',
+      laugh: '大笑'
+    },
+    gender: {
+      male: '男性',
+      female: '女性'
+    },
+    glasses: {
+      none: '无眼镜',
+      common: '普通眼镜',
+      sun: '墨镜'
+    }
+  }
 
   module.exports = {
-    icons: icons
+    icons: icons,
+    dataInfo: dataInfo
   }
 </wxs>
-<camera device-position="{{isPosition? 'back' : 'front'}}" style="height: {{view}}px; width: 100%;" flash="off"></camera>
-<cover-view class="btn-box">
-  <cover-image bindtap="{{item}}" class="image-ele" wx:for="{{icons.icons}}" wx:key="*this" src="/images/icon/{{item}}.png" />
-</cover-view>
+<camera wx:if="{{!isShowPic}}" device-position="{{isPosition? 'back' : 'front'}}" style="height: {{view}}px; width: 100%;" flash="off">
+  <cover-view class="btn-box">
+    <cover-image bindtap="{{item}}" class="image-ele" wx:for="{{icons.icons}}" wx:key="*this" src="/images/icon/{{item}}.png" />
+  </cover-view>
+</camera>
+
+<view wx:else wx:show="isFlag">
+  <image src="{{imgSrc}}" style="width: 750rpx; height: {{view}}px; display:block" />
+  <view class="info_box">
+    <view class="info_row">
+      <!-- 年龄 -->
+      <text>年龄：{{faceInfos.age}}</text>
+      <!-- 分数 -->
+      <text>分数：{{faceInfos.beauty}}</text>
+    </view>
+    <view class="info_row">
+      <!-- 情绪 -->
+      <text>情绪：{{icons.dataInfo.emotion[faceInfos.emotion.type]}}</text>
+      <!-- 表情 -->
+      <text>表情：{{icons.dataInfo.expression[faceInfos.expression.type]}}</text>
+    </view>
+    <view class="info_row">
+      <!-- 性别 -->
+      <text>性别：{{icons.dataInfo.gender[faceInfos.gender.type]}}</text>
+      <!-- 眼镜 -->
+      <text>眼镜：{{icons.dataInfo.glasses[faceInfos.glasses.type]}}</text>
+    </view>
+  </view>
+  <button type="warn" bindtap="reChooseHandle" class="reChoose">重选</button>
+</view>

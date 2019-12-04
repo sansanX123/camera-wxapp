@@ -1,6 +1,6 @@
 // pages/home/home.js
+const app = getApp()
 Page({
-
   /**
    * 页面的初始数据
    */
@@ -9,7 +9,10 @@ Page({
     // 前置摄像头 ‘front’ 后置‘back’
     isPosition: true,
     // 拍照的路径
-    imgSrc: ''
+    imgSrc: '',
+    isShowPic: false,
+    faceInfos: {},
+    isFlag: false
   },
   // 翻转拍照角度
   reverse() {
@@ -17,7 +20,7 @@ Page({
       isPosition: !this.data.isPosition
     })
   },
-  // 拍照处理时间
+  // 拍照事件
   camera() {
     const ctx = wx.createCameraContext()
     ctx.takePhoto({
@@ -25,6 +28,8 @@ Page({
       success: (res) => {
         this.setData({
           imgSrc: res.tempImagePath
+        }, () => {
+          this.getFaceFun()
         })
       },
       fail: () => {
@@ -35,20 +40,75 @@ Page({
     })
   },
   // 选择照片
-  album () {
+  album() {
     wx.chooseImage({
       count: 1,
-      sizeType: ['original'],
-      sourceType: ['album'],
+      sizeType: 'original',
+      sourceType: 'album',
       success: res => {
         res.tempFilePaths.length && this.setData({
-          imgSrc: res.tempFilePaths
+          imgSrc: res.tempFilePaths[0]
+        }, () => {
+          this.getFaceFun()
         })
         // tempFilePath可以作为img标签的src属性显示图片
-      },fail: () => {
+      },
+      fail: () => {
         wx.showToast({
           title: '相册读取失败'
         })
+      }
+    })
+  },
+  reChooseHandle() {
+    this.setData({
+      isShowPic: false
+    })
+  },
+  // 测试颜值函数
+  getFaceFun() {
+    wx.showLoading()
+    const token = app.globalData.access_token
+    if (!token) {
+      return wx.showToast({
+        title: '鉴权失败'
+      })
+    }
+    // 文件管理器
+    const {
+      readFileSync
+    } = wx.getFileSystemManager();
+    const imgBase64 = readFileSync(this.data.imgSrc, 'base64')
+    wx.request({
+      method: 'post',
+      url: 'https://aip.baidubce.com/rest/2.0/face/v3/detect?access_token=' + app.globalData.access_token,
+      header: {
+        'Content-Type': 'application/json'
+      },
+      data: {
+        image: imgBase64,
+        image_type: 'BASE64',
+        face_field: 'age,beauty,expression,gender,glasses,emotion'
+      },
+      success: ({data}) => {
+        const info = data.result
+        console.log(data)
+        if (!info) {
+          wx.hideLoading()
+          wx.showToast({
+            title: '检测失败'
+          })
+          return
+        }
+        this.setData({
+          faceInfos: data.result.face_list[0],
+          isShowPic: true
+        })
+        wx.hideLoading()
+        console.log(this.data.faceInfos)
+      },
+      fail: (err) => {
+        err
       }
     })
   },
@@ -57,10 +117,10 @@ Page({
    */
   onLoad: function(options) {
     const systemInfo = wx.getSystemInfoSync();
-    console.log(systemInfo);
     this.setData({
       view: systemInfo.windowHeight
     })
+    wx.hideLoading()
   },
 
   /**
