@@ -5,9 +5,11 @@
   position: absolute;
   width: 100%;
   bottom: 30px;
+  opacity: 0.7;
+  z-index: 10000;
 }
 
-.btn-box image {
+.btn-box .image-ele {
   width: 50px;
   height: 50px;
 }
