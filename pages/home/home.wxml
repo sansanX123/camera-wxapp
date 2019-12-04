@@ -1,0 +1,12 @@
+<!--pages/home/home.wxml-->
+<wxs module="icons">
+  var icons = ['reverse','camera','album'];
+
+  module.exports = {
+    icons: icons
+  }
+</wxs>
+<camera style="height: {{view}}px; width: 100%;" flash="off"></camera>
+<view class="btn-box">
+  <image wx:for="{{icons.icons}}" wx:key="*this" src="/images/icon/{{item}}.png" />
+</view>
